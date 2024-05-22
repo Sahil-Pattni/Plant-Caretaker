@@ -15,10 +15,12 @@ int SoilSensor::determine()
     return analogRead(pin) > THRESHOLD ? DRY : WET;
 }
 
-
+// Percentage of water in the soil
 int SoilSensor::reading()
 {
-    return analogRead(pin);
+    int rawValue = analogRead(pin);
+    // return map(rawValue, 0, 4095, 100, 0);
+    return rawValue;
 }
 
 #endif

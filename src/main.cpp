@@ -1,6 +1,17 @@
 #include <Arduino.h>
+
+// Display
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include <Wire.h>
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+
+// Custom headers
 #include <soilSensor.h>
 #include <buzzer.h>
+
 
 // Pin management
 namespace Pins
@@ -34,6 +45,21 @@ int lastState = -1;
 void setup() {
   Pins::init();
 
+  // Initialize display
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
+  {
+    Serial.println(F("SSD1306 allocation failed"));
+    for (;;)
+      ;
+  }
+  delay(2000);
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+  display.setCursor(0, 30);
+  display.println("Soil Sensor");
+  display.display();
+  delay(100);
 
   Serial.begin(115200);
   while (!Serial); // Wait for Serial to be ready
@@ -44,8 +70,15 @@ void setup() {
 
 void loop() {
   int reading = soilSensor.reading();
-  Serial.println(reading);
   int state = soilSensor.determine();
+
+  // Display
+  display.clearDisplay();
+  display.setCursor(0, 30);
+  String message = "MST: " + String(reading) + "\n" + (state == DRY ? "Dry" : "Wet");
+  display.println(message);
+  Serial.println(message);
+  display.display();
   
   // Update LED
   if (state == DRY)
